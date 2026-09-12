@@ -12,39 +12,46 @@ Requer Java 11+.
 
 ```bash
 cd src
-javac SimuladorFilas.java
+javac Main.java SimuladorFilas.java
 
-java SimuladorFilas exemplo   # roda o exemplo resolvido a mao do material (validacao da logica)
-java SimuladorFilas m4        # roda os 2 cenarios da entrega M4 (fila simples)
-java SimuladorFilas m6        # roda o cenario da entrega M6 (filas em tandem)
-java SimuladorFilas todos     # roda os tres (padrao, sem argumentos)
+java Main exemplo   # roda o exemplo resolvido a mao do material (validacao da logica)
+java Main m4        # roda os 2 cenarios da entrega M4 (fila simples)
+java Main m6        # roda o cenario da entrega M6 (filas em tandem)
+java Main todos     # roda os tres (padrao, sem argumentos)
 ```
+
+## Estrutura do código
+
+- `SimuladorFilas.java` — o simulador propriamente dito: gerador de números
+  pseudoaleatórios, `Fila`, escalonador de eventos e o algoritmo (`CHEGADA`/`SAIDA`/`PASSAGEM`).
+- `Main.java` — monta os cenários de entrega (M4, M6, exemplo de validação) usando a
+  classe `SimuladorFilas` e imprime o relatório.
 
 ## Como definir um cenário (sintaxe de entrada)
 
 Não há arquivo de configuração externo: os cenários são definidos diretamente em código,
-através da API do simulador. Isso torna explícito, em Java, cada parâmetro pedido pelo
+usando a classe `SimuladorFilas`. Isso torna explícito, em Java, cada parâmetro pedido pelo
 enunciado (chegada, atendimento, servidores, capacidade e roteamento):
 
 ```java
 // Fila: nome, nº servidores, capacidade (-1 = infinita), chegadaMin, chegadaMax (-1 se não houver
 // chegada externa), atendimentoMin, atendimentoMax
-Fila f1 = new Fila("Fila1", 2, 3, 1.0, 5.0, 4.0, 5.0);
-Fila f2 = new Fila("Fila2", 1, 5, -1, -1, 1.0, 3.0); // sem chegada externa
+SimuladorFilas.Fila f1 = new SimuladorFilas.Fila("Fila1", 2, 3, 1.0, 5.0, 4.0, 5.0);
+SimuladorFilas.Fila f2 = new SimuladorFilas.Fila("Fila2", 1, 5, -1, -1, 1.0, 3.0); // sem chegada externa
 
 // Roteamento (rede/tandem): fila de origem -> fila de destino, com probabilidade
 f1.addDestino(f2, 1.0); // 100% do que sai da Fila1 vai para a Fila2
 
-Ambiente amb = new Ambiente(new GeradorCongruencial(semente, 100_000)); // 100.000 aleatórios
-amb.addFila(f1);
-amb.addFila(f2);
-amb.agendaChegadaInicial(f1, 2.5); // 1º cliente chega no tempo 2,5
-amb.run();
-amb.relatorio();
+SimuladorFilas sim = new SimuladorFilas(new SimuladorFilas.GeradorCongruencial(semente, 100_000)); // 100.000 aleatórios
+sim.addFila(f1);
+sim.addFila(f2);
+sim.agendaChegadaInicial(f1, 2.5); // 1º cliente chega no tempo 2,5
+sim.run();
+sim.relatorio();
 ```
 
-Para adicionar um novo cenário, basta criar um novo método (seguindo `rodarM4`/`rodarM6`
-em `SimuladorFilas.java`) com as filas, o roteamento e a chegada inicial desejados.
+Para adicionar um novo cenário, basta criar um novo método em `Main.java` (seguindo
+`rodarM4`/`rodarM6`) com as filas, o roteamento e a chegada inicial desejados.
 
 ## Geração de números pseudoaleatórios
 
@@ -118,10 +125,3 @@ Perdas: 393
 | 5 | 0,0000 | 0,0000% |
 
 Perdas: 0 · Tempo Global: 100325,8792
-
-## Estrutura
-
-```
-src/SimuladorFilas.java   -- simulador completo (gerador de aleatorios, fila, evento,
-                              ambiente/escalonador e os cenarios de entrega)
-```
